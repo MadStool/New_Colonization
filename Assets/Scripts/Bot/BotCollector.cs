@@ -16,7 +16,7 @@ public class BotCollector : MonoBehaviour
         if (other.TryGetComponent(out Resource resource) && _resource == resource)
         {
             resource.transform.SetParent(transform);
-            transform.position = new Vector3(transform.position.x, height, transform.position.z);
+            resource.transform.localPosition = new Vector3(0, height, 0);
             ResourceCollected?.Invoke();
         }
     }

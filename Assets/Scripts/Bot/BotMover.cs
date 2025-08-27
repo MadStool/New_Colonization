@@ -6,24 +6,40 @@ public class BotMover : MonoBehaviour
 {
     [SerializeField] private float _speed;
 
-    private bool _haveTarget = false;
-    private Vector3 _targetPosition;
+    private Coroutine _currentMovement;
 
-    private void Update()
+    public IEnumerator MoveTo(Vector3 targetPosition)
     {
-        if (_haveTarget)
+        if (_currentMovement != null)
         {
-            transform.forward = _targetPosition - transform.position;
-            transform.position = Vector3.MoveTowards(transform.position, _targetPosition, _speed * Time.deltaTime);
-
-            if (transform.position == _targetPosition)
-                _haveTarget = false;
+            StopCoroutine(_currentMovement);
         }
+
+        _currentMovement = StartCoroutine(MoveToCoroutine(targetPosition));
+        yield return _currentMovement;
+    }
+
+    private IEnumerator MoveToCoroutine(Vector3 targetPosition)
+    {
+        while (Vector3.Distance(transform.position, targetPosition) > 0.1f)
+        {
+            transform.forward = targetPosition - transform.position;
+
+            transform.position = Vector3.MoveTowards(
+                transform.position,
+                targetPosition,
+                _speed * Time.deltaTime
+            );
+
+            yield return null;
+        }
+
+        transform.position = targetPosition;
+        _currentMovement = null;
     }
 
     public void SetTargetPosition(Vector3 position)
     {
-        _targetPosition = position;
-        _haveTarget = true;
+        StartCoroutine(MoveTo(position));
     }
 }

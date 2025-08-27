@@ -13,6 +13,7 @@ public class Bot : MonoBehaviour
     private BotCollector _botCollector;
     private BotBuilder _botBuilder;
     private Vector3 _targetBase;
+    private Coroutine _currentAction;
 
     public bool IsBusy { get; set; }
 
@@ -20,7 +21,6 @@ public class Bot : MonoBehaviour
     {
         _currentBase = baseObject;
         _targetBase = baseObject.transform.position;
-
         InitializeComponents();
     }
 
@@ -30,21 +30,37 @@ public class Bot : MonoBehaviour
         _botCollector = GetComponent<BotCollector>();
         _botBuilder = GetComponent<BotBuilder>();
 
-        _botCollector.ResourceCollected += AssignResourceBase;
-        _botBuilder.Free += GetFree;
+        _botCollector.ResourceCollected += OnResourceCollected;
+        _botBuilder.Free += OnBuildingComplete;
     }
 
     private void OnDisable()
     {
-        _botCollector.ResourceCollected -= AssignResourceBase;
-        _botBuilder.Free -= GetFree;
+        _botCollector.ResourceCollected -= OnResourceCollected;
+        _botBuilder.Free -= OnBuildingComplete;
+        StopCurrentAction();
+    }
+
+    private void StopCurrentAction()
+    {
+        if (_currentAction != null)
+        {
+            StopCoroutine(_currentAction);
+            _currentAction = null;
+        }
+    }
+
+    private void StartNewAction(IEnumerator coroutine)
+    {
+        StopCurrentAction();
+        _currentAction = StartCoroutine(coroutine);
     }
 
     public void CreateBase(Flag flag)
     {
         IsBusy = true;
         _botBuilder.SetTargetFlag(flag);
-        _botMover.SetTargetPosition(flag.transform.position);
+        StartNewAction(MoveToPosition(flag.transform.position));
     }
 
     public void SubmitResource(Resource resource)
@@ -56,25 +72,30 @@ public class Bot : MonoBehaviour
     {
         IsBusy = true;
         _botCollector.SetTargetResource(resource);
-        _botMover.SetTargetPosition(resource.transform.position);
+        StartNewAction(MoveToPosition(resource.transform.position));
     }
 
-    private void GetFree()
+    private void OnResourceCollected()
+    {
+        StartNewAction(ReturnToBase());
+    }
+
+    private void OnBuildingComplete()
     {
         IsBusy = false;
     }
 
-    private void AssignResourceBase()
+    private IEnumerator MoveToPosition(Vector3 position)
     {
-        _botMover.SetTargetPosition(_targetBase);
-        StartCoroutine(CheckReturnToBase());
+        yield return _botMover.MoveTo(position);
+
+        if (IsBusy == false)
+            yield break;
     }
 
-    private IEnumerator CheckReturnToBase()
+    private IEnumerator ReturnToBase()
     {
-        while (Vector3.Distance(transform.position, _targetBase) > 0.5f)
-            yield return null;
-
+        yield return _botMover.MoveTo(_targetBase);
         IsBusy = false;
     }
 }
