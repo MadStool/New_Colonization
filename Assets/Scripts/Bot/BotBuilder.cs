@@ -2,23 +2,30 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 public class BotBuilder : MonoBehaviour
 {
-    [SerializeField] private Base _basePrefab;
-
+    private Bot _thisBot;
+    private BaseSpawner _baseSpawner;
     private Flag _flag;
     private bool _isBuilding = false;
 
     public event Action Free;
 
+    private void Awake()
+    {
+        _thisBot = GetComponent<Bot>();
+    }
+
+    public void SetBaseSpawner(BaseSpawner baseSpawner)
+    {
+        _baseSpawner = baseSpawner;
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (_isBuilding && other.TryGetComponent<Flag>(out Flag flag) && _flag == flag)
-        {
             StartCoroutine(BuildBase(flag));
-        }
     }
 
     private IEnumerator BuildBase(Flag flag)
@@ -31,21 +38,20 @@ public class BotBuilder : MonoBehaviour
         Destroy(flag.gameObject);
         _flag = null;
 
-        Base newBase = Instantiate(_basePrefab, transform.position, Quaternion.identity);
-        newBase.ClearBot();
-        newBase.transform.parent = transform.GetComponentInParent<Base>().GetComponentInParent<Scanner>().transform;
-        newBase.FillFields();
+        if (_baseSpawner == null)
+        {
+            Debug.LogError("BaseSpawner not set!");
+            yield break;
+        }
 
-        Base oldBase = transform.parent.GetComponent<Base>();
+        Base newBase = _baseSpawner.SpawnBase(transform.position, _thisBot);
+
+        Base oldBase = _thisBot.transform.parent.GetComponent<Base>();
 
         if (oldBase != null)
-            oldBase.RemoveBot(GetComponent<Bot>());
+            oldBase.RemoveBot(_thisBot);
 
-        Bot bot = GetComponent<Bot>();
-        bot.SetBase(newBase);
-        newBase.AddBot(bot);
-
-        bot.IsBusy = false;
+        _thisBot.IsBusy = false;
         Free?.Invoke();
     }
 

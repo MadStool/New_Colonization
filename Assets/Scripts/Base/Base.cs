@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,6 +7,8 @@ using UnityEngine;
 [RequireComponent(typeof(BaseBuilder))]
 public class Base : MonoBehaviour
 {
+    [SerializeField] private BaseSpawner _baseSpawner;
+
     private Scanner _scanner;
     private List<Bot> _bots = new List<Bot>();
     private BaseCreatedBot _baseCreatedBot;
@@ -21,7 +23,22 @@ public class Base : MonoBehaviour
         _baseCreatedBot = GetComponent<BaseCreatedBot>();
         _baseWallet = GetComponent<BaseWallet>();
         _baseBuilder = GetComponent<BaseBuilder>();
-        FillFields();
+    }
+
+    public void Initialize(Scanner scanner, BaseSpawner baseSpawner, Bot builderBot = null)
+    {
+        _scanner = scanner;
+        _baseSpawner = baseSpawner;
+
+        if (builderBot != null)
+            AddBot(builderBot);
+        else
+            StartCoroutine(DelayedCreateBot());
+    }
+
+    private IEnumerator DelayedCreateBot()
+    {
+        yield return null;
         CreateBot();
     }
 
@@ -39,7 +56,7 @@ public class Base : MonoBehaviour
 
     private void Update()
     {
-        if (_scanner.TryHereResources())
+        if (_scanner != null && _scanner.TryHereResources())
         {
             Bot freeBot = FindFreeBot();
 
@@ -71,8 +88,14 @@ public class Base : MonoBehaviour
 
     public void AddBot(Bot bot)
     {
-        _bots.Add(bot);
-        bot.SetBase(this);
+        if (_bots.Contains(bot) == false)
+        {
+            _bots.Add(bot);
+            bot.SetBase(this);
+
+            if (_baseSpawner != null)
+                bot.SetBaseSpawner(_baseSpawner);
+        }
     }
 
     public void ClearBot()
@@ -81,11 +104,6 @@ public class Base : MonoBehaviour
             Destroy(bot.gameObject);
 
         _bots.Clear();
-    }
-
-    public void FillFields()
-    {
-        _scanner = transform.GetComponentInParent<Scanner>();
     }
 
     private void Build(Bot bot)
@@ -101,7 +119,14 @@ public class Base : MonoBehaviour
     private void CreateBot()
     {
         Bot newBot = _baseCreatedBot.Create();
-        _bots.Add(newBot);
+
+        if (_bots.Contains(newBot) == false)
+        {
+            _bots.Add(newBot);
+
+            if (_baseSpawner != null)
+                newBot.SetBaseSpawner(_baseSpawner);
+        }
     }
 
     public void RemoveBot(Bot bot)

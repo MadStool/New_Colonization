@@ -14,6 +14,7 @@ public class Bot : MonoBehaviour
     private BotBuilder _botBuilder;
     private Vector3 _targetBase;
     private Coroutine _currentAction;
+    private bool _isInitialized = false;
 
     public bool IsBusy { get; set; }
 
@@ -24,6 +25,12 @@ public class Bot : MonoBehaviour
         InitializeComponents();
     }
 
+    public void SetBaseSpawner(BaseSpawner baseSpawner)
+    {
+        if (_botBuilder != null)
+            _botBuilder.SetBaseSpawner(baseSpawner);
+    }
+
     private void InitializeComponents()
     {
         _botMover = GetComponent<BotMover>();
@@ -32,10 +39,15 @@ public class Bot : MonoBehaviour
 
         _botCollector.ResourceCollected += OnResourceCollected;
         _botBuilder.Free += OnBuildingComplete;
+
+        _isInitialized = true;
     }
 
     private void OnDisable()
     {
+        if (_isInitialized == false)
+            return;
+
         _botCollector.ResourceCollected -= OnResourceCollected;
         _botBuilder.Free -= OnBuildingComplete;
         StopCurrentAction();
