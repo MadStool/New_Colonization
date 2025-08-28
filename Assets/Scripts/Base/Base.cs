@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -22,6 +23,8 @@ public class Base : MonoBehaviour
     private bool _isBaseBuilding = false;
 
     public int BotsCount => _bots.Count;
+
+    public event Action<int> BotsCountChanged;
 
     private void Awake()
     {
@@ -117,7 +120,7 @@ public class Base : MonoBehaviour
         return null;
     }
 
-    public void AddBot(Bot bot)
+    private void AddBot(Bot bot)
     {
         if (_bots.Contains(bot) == false)
         {
@@ -126,15 +129,9 @@ public class Base : MonoBehaviour
 
             if (_baseSpawner != null)
                 bot.SetBaseSpawner(_baseSpawner);
+
+            BotsCountChanged?.Invoke(_bots.Count);
         }
-    }
-
-    public void ClearBot()
-    {
-        foreach (Bot bot in _bots)
-            Destroy(bot.gameObject);
-
-        _bots.Clear();
     }
 
     private void Build(Bot bot)
@@ -163,6 +160,9 @@ public class Base : MonoBehaviour
     public void RemoveBot(Bot bot)
     {
         if (_bots.Contains(bot))
+        {
             _bots.Remove(bot);
+            BotsCountChanged?.Invoke(_bots.Count);
+        }
     }
 }

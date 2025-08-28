@@ -8,9 +8,12 @@ public class BaseWallet : MonoBehaviour
     private int _countPoints;
     public int CurrentPoints => _countPoints;
 
+    public event Action<int> PointsChanged;
+
     public void AddPoint()
     {
         _countPoints++;
+        PointsChanged?.Invoke(_countPoints);
     }
 
     public bool TrySpend(int amount)
@@ -18,7 +21,7 @@ public class BaseWallet : MonoBehaviour
         if (_countPoints >= amount)
         {
             _countPoints -= amount;
-
+            PointsChanged?.Invoke(_countPoints);
             return true;
         }
 
