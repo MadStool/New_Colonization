@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using static Unity.IO.LowLevel.Unsafe.AsyncReadManagerMetrics;
 
 [RequireComponent(typeof(MeshRenderer))]
 public class BaseBuilder : MonoBehaviour
@@ -18,8 +15,8 @@ public class BaseBuilder : MonoBehaviour
 
     public bool IsBuilding => isFlag;
 
-    public event Action BaseBeganBuilt;
-    public event Action BaseBuilt;
+    public event Action BuildStarted;
+    public event Action BuildCompleted;
 
     private void Awake()
     {
@@ -27,25 +24,28 @@ public class BaseBuilder : MonoBehaviour
         _startMaterial = _renderer.material;
     }
 
-    public void CreateBase(Bot bot)
-    {
-        bot.CreateBase(_newFlag);
-        _renderer.material = _startMaterial;
-        BaseBuilt?.Invoke();
-    }
-
     public void PutUpFlag(Vector3 position)
     {
         if (isFlag)
         {
-            _newFlag = Instantiate(_flagPrefab, position, Quaternion.identity);
-            isFlag = false;
-            BaseBeganBuilt?.Invoke();
+            if (_newFlag == null)
+            {
+                _newFlag = Instantiate(_flagPrefab, position, Quaternion.identity);
+                BuildStarted?.Invoke();
+            }
+            else
+            {
+                _newFlag.transform.position = position;
+            }
         }
-        else
-        {
-            _newFlag.transform.position = position;
-        }
+    }
+
+    public void CreateBase(Bot bot)
+    {
+        bot.CreateBase(_newFlag);
+        _renderer.material = _startMaterial;
+        isFlag = false;
+        BuildCompleted?.Invoke();
     }
 
     public void Work()

@@ -6,75 +6,63 @@ public class GroundRayCast : MonoBehaviour
 {
     [SerializeField] private Camera _camera;
 
-    private List<Transform> _bases = new List<Transform>();
-    private int _index = 0;
-    private bool _isBase = false;
-    private BaseBuilder _baseBuilder;
-
-    private void Awake()
-    {
-        AddBase();
-    }
+    private BaseBuilder _currentBaseBuilder;
+    private bool _isBuildingMode = false;
 
     private void OnDisable()
     {
-        if (_baseBuilder != null)
+        if (_currentBaseBuilder != null)
         {
-            _baseBuilder.BaseBuilt -= FinishPositioning;
+            _currentBaseBuilder.BuildCompleted -= FinishPositioning;
         }
     }
 
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
-            SetTargetPositionBuilding();
+            HandleMouseClick();
     }
 
     private void FinishPositioning()
     {
-        _isBase = false;
-        _baseBuilder = null;
-        AddBase();
+        _isBuildingMode = false;
+        _currentBaseBuilder = null;
     }
 
-    private void AddBase()
+    private void HandleMouseClick()
     {
-        _bases.Clear();
-        for (int i = 1; i < transform.childCount; i++)
-            _bases.Add(transform.GetChild(i).transform);
-    }
-
-    private void SetTargetPositionBuilding()
-    {
-        int exception = -1;
-        int minBotsRequired = 2;
-
         if (Physics.Raycast(_camera.ScreenPointToRay(Input.mousePosition), out RaycastHit hit))
         {
-            _index = _bases.IndexOf(hit.transform);
-
-            if (_index != exception && _isBase == false)
+            if (_isBuildingMode == false && hit.transform.TryGetComponent(out Base baseComponent))
             {
-                Base baseComponent = _bases[_index].GetComponent<Base>();
-
-                if (baseComponent != null && baseComponent.BotsCount >= minBotsRequired)
-                {
-                    _isBase = true;
-                    _baseBuilder = _bases[_index].GetComponent<BaseBuilder>();
-                    _baseBuilder.BaseBuilt += FinishPositioning;
-                    _baseBuilder.Work();
-                }
-                else
-                {
-                    Debug.Log("Not enough bots to build! You need at least 2.");
-                    return;
-                }
+                TryStartBuildingMode(baseComponent);
             }
-
-            if (hit.transform.GetComponent<SpawnResources>() && _isBase)
+            else if (_isBuildingMode && hit.transform.TryGetComponent(out SpawnResources spawnResources))
             {
-                _baseBuilder.PutUpFlag(hit.point);
+                _currentBaseBuilder.PutUpFlag(hit.point);
             }
+        }
+    }
+
+    private void TryStartBuildingMode(Base baseComponent)
+    {
+        int minBotsRequired = 2;
+
+        if (baseComponent.BotsCount >= minBotsRequired)
+        {
+            BaseBuilder baseBuilder = baseComponent.GetComponent<BaseBuilder>();
+
+            if (baseBuilder != null)
+            {
+                _isBuildingMode = true;
+                _currentBaseBuilder = baseBuilder;
+                _currentBaseBuilder.BuildCompleted += FinishPositioning;
+                _currentBaseBuilder.Work();
+            }
+        }
+        else
+        {
+            Debug.Log("Not enough bots to build! You need at least 2.");
         }
     }
 }

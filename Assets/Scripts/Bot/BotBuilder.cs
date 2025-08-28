@@ -51,7 +51,6 @@ public class BotBuilder : MonoBehaviour
         if (oldBase != null)
             oldBase.RemoveBot(_thisBot);
 
-        _thisBot.IsBusy = false;
         Free?.Invoke();
     }
 

@@ -15,8 +15,9 @@ public class Bot : MonoBehaviour
     private Vector3 _targetBase;
     private Coroutine _currentAction;
     private bool _isInitialized = false;
+    private bool _isBusy = false;
 
-    public bool IsBusy { get; set; }
+    public bool IsBusy => _isBusy;
 
     public void SetBase(Base baseObject)
     {
@@ -70,7 +71,7 @@ public class Bot : MonoBehaviour
 
     public void CreateBase(Flag flag)
     {
-        IsBusy = true;
+        SetBusy(true);
         _botBuilder.SetTargetFlag(flag);
         StartNewAction(MoveToPosition(flag.transform.position));
     }
@@ -82,7 +83,7 @@ public class Bot : MonoBehaviour
 
     public void GoAfterResource(Resource resource)
     {
-        IsBusy = true;
+        SetBusy(true);
         _botCollector.SetTargetResource(resource);
         StartNewAction(MoveToPosition(resource.transform.position));
     }
@@ -94,20 +95,25 @@ public class Bot : MonoBehaviour
 
     private void OnBuildingComplete()
     {
-        IsBusy = false;
+        SetBusy(false);
     }
 
     private IEnumerator MoveToPosition(Vector3 position)
     {
         yield return _botMover.MoveTo(position);
 
-        if (IsBusy == false)
+        if (_isBusy == false)
             yield break;
     }
 
     private IEnumerator ReturnToBase()
     {
         yield return _botMover.MoveTo(_targetBase);
-        IsBusy = false;
+        SetBusy(false);
+    }
+
+    private void SetBusy(bool busy)
+    {
+        _isBusy = busy;
     }
 }

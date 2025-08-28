@@ -5,15 +5,20 @@ using UnityEngine;
 [RequireComponent(typeof(BaseCreatedBot))]
 [RequireComponent(typeof(BaseWallet))]
 [RequireComponent(typeof(BaseBuilder))]
+[RequireComponent(typeof(BaseCollector))]
 public class Base : MonoBehaviour
 {
     [SerializeField] private BaseSpawner _baseSpawner;
+    [SerializeField] private int _botCost = 3;
+    [SerializeField] private int _baseCost = 5;
 
+    private bool _inBaseBeingBuilt = false;
     private Scanner _scanner;
     private List<Bot> _bots = new List<Bot>();
     private BaseCreatedBot _baseCreatedBot;
     private BaseWallet _baseWallet;
     private BaseBuilder _baseBuilder;
+    private BaseCollector _baseCollector;
     private bool _isBaseBuilding = false;
 
     public int BotsCount => _bots.Count;
@@ -23,6 +28,7 @@ public class Base : MonoBehaviour
         _baseCreatedBot = GetComponent<BaseCreatedBot>();
         _baseWallet = GetComponent<BaseWallet>();
         _baseBuilder = GetComponent<BaseBuilder>();
+        _baseCollector = GetComponent<BaseCollector>();
     }
 
     public void Initialize(Scanner scanner, BaseSpawner baseSpawner, Bot builderBot = null)
@@ -44,14 +50,41 @@ public class Base : MonoBehaviour
 
     private void OnEnable()
     {
-        _baseWallet.BotCreated += CreateBot;
-        _baseWallet.BaseCreated += CreateBase;
+        _baseCollector.ResourceDelivered += OnResourceCollected;
+        _baseBuilder.BuildStarted += OnBaseBuildStarted;
     }
 
     private void OnDisable()
     {
-        _baseWallet.BotCreated -= CreateBot;
-        _baseWallet.BaseCreated -= CreateBase;
+        _baseCollector.ResourceDelivered -= OnResourceCollected;
+        _baseBuilder.BuildStarted -= OnBaseBuildStarted;
+    }
+
+    private void OnResourceCollected(Bot bot)
+    {
+        _baseWallet.AddPoint();
+        TryCreateBot();
+        TryCreateBase();
+    }
+
+    private void OnBaseBuildStarted()
+    {
+        _inBaseBeingBuilt = true;
+    }
+
+    private void TryCreateBot()
+    {
+        if (_inBaseBeingBuilt == false && _baseWallet.TrySpend(_botCost))
+            CreateBot();
+    }
+
+    private void TryCreateBase()
+    {
+        if (_inBaseBeingBuilt && _baseWallet.TrySpend(_baseCost))
+        {
+            _inBaseBeingBuilt = false;
+            CreateBase();
+        }
     }
 
     private void Update()
@@ -64,13 +97,11 @@ public class Base : MonoBehaviour
             {
                 if (_isBaseBuilding)
                 {
-                    freeBot.IsBusy = true;
                     Build(freeBot);
                     _isBaseBuilding = false;
                 }
                 else
                 {
-                    freeBot.IsBusy = true;
                     freeBot.GoAfterResource(_scanner.GetResource());
                 }
             }

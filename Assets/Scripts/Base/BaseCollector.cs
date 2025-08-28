@@ -1,19 +1,10 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Base))]
 public class BaseCollector : MonoBehaviour
 {
-    private Base _base;
-
-    public event Action Collected;
-
-    private void Awake()
-    {
-        _base = GetComponent<Base>();
-    }
+    public event Action<Bot> ResourceDelivered;
 
     private void OnTriggerEnter(Collider other)
     {
@@ -24,8 +15,7 @@ public class BaseCollector : MonoBehaviour
             if (resource != null)
             {
                 bot.SubmitResource(resource);
-                bot.IsBusy = false;
-                Collected?.Invoke();
+                ResourceDelivered?.Invoke(bot);
             }
         }
     }
