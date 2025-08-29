@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(Base))]
-public class BaseCollector : MonoBehaviour
+public class CollectorBase : MonoBehaviour
 {
     public event Action<Bot> ResourceDelivered;
 

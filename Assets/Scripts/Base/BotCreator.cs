@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseCreatedBot : MonoBehaviour
+public class BotCreator : MonoBehaviour
 {
     [SerializeField] private Bot _botPrefab;
 

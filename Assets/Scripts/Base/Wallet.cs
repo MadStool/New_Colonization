@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BaseWallet : MonoBehaviour
+public class Wallet : MonoBehaviour
 {
     private int _countPoints;
     public int CurrentPoints => _countPoints;
@@ -22,6 +22,7 @@ public class BaseWallet : MonoBehaviour
         {
             _countPoints -= amount;
             PointsChanged?.Invoke(_countPoints);
+
             return true;
         }
 

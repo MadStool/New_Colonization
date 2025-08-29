@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BotCollector : MonoBehaviour
+public class CollectorBot : MonoBehaviour
 {
     private Resource _resource;
 

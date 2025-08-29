@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [RequireComponent(typeof(MeshRenderer))]
-public class BaseBuilder : MonoBehaviour
+public class BulderBase : MonoBehaviour
 {
     [SerializeField] private Material _materialPrefab;
     [SerializeField] private Flag _flagPrefab;
@@ -11,7 +11,7 @@ public class BaseBuilder : MonoBehaviour
     private Material _startMaterial;
     private MeshRenderer _renderer;
     private bool isFlag = false;
-    private Flag _newFlag;
+    private Flag _flag;
 
     public bool IsBuilding => isFlag;
 
@@ -28,21 +28,21 @@ public class BaseBuilder : MonoBehaviour
     {
         if (isFlag)
         {
-            if (_newFlag == null)
+            if (_flag == null)
             {
-                _newFlag = Instantiate(_flagPrefab, position, Quaternion.identity);
+                _flag = Instantiate(_flagPrefab, position, Quaternion.identity);
                 BuildStarted?.Invoke();
             }
             else
             {
-                _newFlag.transform.position = position;
+                _flag.transform.position = position;
             }
         }
     }
 
     public void CreateBase(Bot bot)
     {
-        bot.CreateBase(_newFlag);
+        bot.CreateBase(_flag);
         _renderer.material = _startMaterial;
         isFlag = false;
         BuildCompleted?.Invoke();

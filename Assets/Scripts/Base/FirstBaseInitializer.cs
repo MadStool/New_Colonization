@@ -3,7 +3,7 @@
 public class FirstBaseInitializer : MonoBehaviour
 {
     [SerializeField] private Scanner _scanner;
-    [SerializeField] private BaseSpawner _baseSpawner;
+    [SerializeField] private SpawnerBase _baseSpawner;
 
     private void Awake()
     {

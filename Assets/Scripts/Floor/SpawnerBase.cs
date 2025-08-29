@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class BaseSpawner : MonoBehaviour
+public class SpawnerBase : MonoBehaviour
 {
     [SerializeField] private Base _basePrefab;
     [SerializeField] private Transform _basesParent;
@@ -8,9 +8,9 @@ public class BaseSpawner : MonoBehaviour
 
     public Base SpawnBase(Vector3 position, Bot builderBot = null)
     {
-        Base newBase = Instantiate(_basePrefab, position, Quaternion.identity, _basesParent);
-        newBase.Initialize(_scanner, this, builderBot);
+        Base createdBase = Instantiate(_basePrefab, position, Quaternion.identity, _basesParent);
+        createdBase.Initialize(_scanner, this, builderBot);
 
-        return newBase;
+        return createdBase;
     }
 }

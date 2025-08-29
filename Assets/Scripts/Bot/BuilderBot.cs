@@ -3,10 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BotBuilder : MonoBehaviour
+public class BuilderBot : MonoBehaviour
 {
     private Bot _thisBot;
-    private BaseSpawner _baseSpawner;
+    private SpawnerBase _baseSpawner;
     private Flag _flag;
     private bool _isBuilding = false;
 
@@ -17,9 +17,9 @@ public class BotBuilder : MonoBehaviour
         _thisBot = GetComponent<Bot>();
     }
 
-    public void SetBaseSpawner(BaseSpawner baseSpawner)
+    public void SetBaseSpawner(SpawnerBase spawnerBase)
     {
-        _baseSpawner = baseSpawner;
+        _baseSpawner = spawnerBase;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -44,12 +44,12 @@ public class BotBuilder : MonoBehaviour
             yield break;
         }
 
-        Base newBase = _baseSpawner.SpawnBase(transform.position, _thisBot);
+        Base createdBase = _baseSpawner.SpawnBase(transform.position, _thisBot);
 
-        Base oldBase = _thisBot.transform.parent.GetComponent<Base>();
+        Base originalBase = _thisBot.transform.parent.GetComponent<Base>();
 
-        if (oldBase != null)
-            oldBase.RemoveBot(_thisBot);
+        if (originalBase != null)
+            originalBase.RemoveBot(_thisBot);
 
         Free?.Invoke();
     }

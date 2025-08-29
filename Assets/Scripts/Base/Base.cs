@@ -3,23 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(BaseCreatedBot))]
-[RequireComponent(typeof(BaseWallet))]
-[RequireComponent(typeof(BaseBuilder))]
-[RequireComponent(typeof(BaseCollector))]
+[RequireComponent(typeof(BotCreator))]
+[RequireComponent(typeof(Wallet))]
+[RequireComponent(typeof(BulderBase))]
+[RequireComponent(typeof(CollectorBase))]
 public class Base : MonoBehaviour
 {
-    [SerializeField] private BaseSpawner _baseSpawner;
+    [SerializeField] private SpawnerBase _baseSpawner;
     [SerializeField] private int _botCost = 3;
     [SerializeField] private int _baseCost = 5;
 
     private bool _inBaseBeingBuilt = false;
     private Scanner _scanner;
     private List<Bot> _bots = new List<Bot>();
-    private BaseCreatedBot _baseCreatedBot;
-    private BaseWallet _baseWallet;
-    private BaseBuilder _baseBuilder;
-    private BaseCollector _baseCollector;
+    private BotCreator _baseCreatedBot;
+    private Wallet _baseWallet;
+    private BulderBase _baseBuilder;
+    private CollectorBase _baseCollector;
     private bool _isBaseBuilding = false;
 
     public int BotsCount => _bots.Count;
@@ -28,13 +28,13 @@ public class Base : MonoBehaviour
 
     private void Awake()
     {
-        _baseCreatedBot = GetComponent<BaseCreatedBot>();
-        _baseWallet = GetComponent<BaseWallet>();
-        _baseBuilder = GetComponent<BaseBuilder>();
-        _baseCollector = GetComponent<BaseCollector>();
+        _baseCreatedBot = GetComponent<BotCreator>();
+        _baseWallet = GetComponent<Wallet>();
+        _baseBuilder = GetComponent<BulderBase>();
+        _baseCollector = GetComponent<CollectorBase>();
     }
 
-    public void Initialize(Scanner scanner, BaseSpawner baseSpawner, Bot builderBot = null)
+    public void Initialize(Scanner scanner, SpawnerBase baseSpawner, Bot builderBot = null)
     {
         _scanner = scanner;
         _baseSpawner = baseSpawner;
@@ -146,14 +146,14 @@ public class Base : MonoBehaviour
 
     private void CreateBot()
     {
-        Bot newBot = _baseCreatedBot.Create();
+        Bot bot = _baseCreatedBot.Create();
 
-        if (_bots.Contains(newBot) == false)
+        if (_bots.Contains(bot) == false)
         {
-            _bots.Add(newBot);
+            _bots.Add(bot);
 
             if (_baseSpawner != null)
-                newBot.SetBaseSpawner(_baseSpawner);
+                bot.SetBaseSpawner(_baseSpawner);
         }
     }
 

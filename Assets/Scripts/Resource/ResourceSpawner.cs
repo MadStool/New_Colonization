@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [RequireComponent(typeof(BoxCollider))]
-public class SpawnResources : MonoBehaviour
+public class ResorceSpawner : MonoBehaviour
 {
     [SerializeField] private Resource _resourcePrefab;
     [SerializeField] private float _timeBetweenSpawn;

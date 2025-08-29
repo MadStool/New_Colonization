@@ -1,47 +1,37 @@
-using UnityEngine;
+п»їusing UnityEngine;
 using TMPro;
 
-public class BaseUI : MonoBehaviour
+public class UI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _uiText;
 
     private Base _base;
-    private BaseWallet _baseWallet;
-    private BaseBuilder _baseBuilder;
+    private Wallet _baseWallet;
+    private BulderBase _baseBuilder;
     private Camera _mainCamera;
 
     private void Awake()
     {
         _base = GetComponent<Base>();
-        _baseWallet = GetComponent<BaseWallet>();
-        _baseBuilder = GetComponent<BaseBuilder>();
+        _baseWallet = GetComponent<Wallet>();
+        _baseBuilder = GetComponent<BulderBase>();
         _mainCamera = Camera.main;
     }
 
     private void OnEnable()
     {
-        // Подписываемся на события изменения ресурсов
         if (_baseWallet != null)
-        {
-            // Нужно добавить событие в BaseWallet
             _baseWallet.PointsChanged += OnPointsChanged;
-        }
 
-        // Подписываемся на события изменения количества ботов
         if (_base != null)
-        {
-            // Нужно добавить событие в Base
             _base.BotsCountChanged += OnBotsCountChanged;
-        }
 
-        // Подписываемся на события строительства
         if (_baseBuilder != null)
         {
             _baseBuilder.BuildStarted += OnBuildStateChanged;
             _baseBuilder.BuildCompleted += OnBuildStateChanged;
         }
 
-        // Первоначальное обновление
         UpdateUI();
     }
 
@@ -60,25 +50,13 @@ public class BaseUI : MonoBehaviour
         }
     }
 
-    private void OnPointsChanged(int newPoints)
-    {
-        UpdateUI();
-    }
+    private void OnPointsChanged(int points) => UpdateUI();
 
-    private void OnBotsCountChanged(int newCount)
-    {
-        UpdateUI();
-    }
+    private void OnBotsCountChanged(int count) => UpdateUI();
 
-    private void OnBuildStateChanged()
-    {
-        UpdateUI();
-    }
+    private void OnBuildStateChanged() => UpdateUI();
 
-    private void LateUpdate()
-    {
-        LookAtCamera();
-    }
+    private void LateUpdate() => LookAtCamera();
 
     private void LookAtCamera()
     {

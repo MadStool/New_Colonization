@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(BotMover))]
-[RequireComponent(typeof(BotCollector))]
-[RequireComponent(typeof(BotBuilder))]
+[RequireComponent(typeof(MoverBot))]
+[RequireComponent(typeof(CollectorBot))]
+[RequireComponent(typeof(BuilderBot))]
 public class Bot : MonoBehaviour
 {
     private Base _currentBase;
-    private BotMover _botMover;
-    private BotCollector _botCollector;
-    private BotBuilder _botBuilder;
+    private MoverBot _botMover;
+    private CollectorBot _botCollector;
+    private BuilderBot _botBuilder;
     private Vector3 _targetBase;
     private Coroutine _currentAction;
     private bool _isInitialized = false;
@@ -26,17 +26,25 @@ public class Bot : MonoBehaviour
         InitializeComponents();
     }
 
-    public void SetBaseSpawner(BaseSpawner baseSpawner)
+    public void SetBaseSpawner(SpawnerBase spawnerBase)
     {
         if (_botBuilder != null)
-            _botBuilder.SetBaseSpawner(baseSpawner);
+            _botBuilder.SetBaseSpawner(spawnerBase);
+    }
+
+    public void ChangeBase(Base createdBase)
+    {
+        if (_currentBase != null)
+            _currentBase.RemoveBot(this);
+
+        SetBase(createdBase);
     }
 
     private void InitializeComponents()
     {
-        _botMover = GetComponent<BotMover>();
-        _botCollector = GetComponent<BotCollector>();
-        _botBuilder = GetComponent<BotBuilder>();
+        _botMover = GetComponent<MoverBot>();
+        _botCollector = GetComponent<CollectorBot>();
+        _botBuilder = GetComponent<BuilderBot>();
 
         _botCollector.ResourceCollected += OnResourceCollected;
         _botBuilder.Free += OnBuildingComplete;

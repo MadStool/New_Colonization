@@ -6,7 +6,7 @@ public class GroundRayCast : MonoBehaviour
 {
     [SerializeField] private Camera _camera;
 
-    private BaseBuilder _currentBaseBuilder;
+    private BulderBase _currentBaseBuilder;
     private bool _isBuildingMode = false;
 
     private void OnDisable()
@@ -37,7 +37,7 @@ public class GroundRayCast : MonoBehaviour
             {
                 TryStartBuildingMode(baseComponent);
             }
-            else if (_isBuildingMode && hit.transform.TryGetComponent(out SpawnResources spawnResources))
+            else if (_isBuildingMode && hit.transform.TryGetComponent(out ResorceSpawner spawnResources))
             {
                 _currentBaseBuilder.PutUpFlag(hit.point);
             }
@@ -50,7 +50,7 @@ public class GroundRayCast : MonoBehaviour
 
         if (baseComponent.BotsCount >= minBotsRequired)
         {
-            BaseBuilder baseBuilder = baseComponent.GetComponent<BaseBuilder>();
+            BulderBase baseBuilder = baseComponent.GetComponent<BulderBase>();
 
             if (baseBuilder != null)
             {
