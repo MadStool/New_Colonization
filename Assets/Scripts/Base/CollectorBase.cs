@@ -10,11 +10,9 @@ public class CollectorBase : MonoBehaviour
     {
         if (other.TryGetComponent(out Bot bot))
         {
-            Resource resource = bot.GetComponentInChildren<Resource>();
-
-            if (resource != null)
+            if (bot.CurrentResource != null)
             {
-                bot.SubmitResource(resource);
+                bot.SubmitResource(bot.CurrentResource);
                 ResourceDelivered?.Invoke(bot);
             }
         }

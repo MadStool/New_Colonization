@@ -34,6 +34,39 @@ public class Base : MonoBehaviour
         _baseCollector = GetComponent<CollectorBase>();
     }
 
+    private void OnEnable()
+    {
+        _baseCollector.ResourceDelivered += OnResourceCollected;
+        _baseBuilder.BuildStarted += OnBaseBuildStarted;
+    }
+
+    private void OnDisable()
+    {
+        _baseCollector.ResourceDelivered -= OnResourceCollected;
+        _baseBuilder.BuildStarted -= OnBaseBuildStarted;
+    }
+
+    private void Update()
+    {
+        if (_scanner != null && _scanner.TryHereResources())
+        {
+            Bot freeBot = FindFreeBot();
+
+            if (freeBot != null)
+            {
+                if (_isBaseBuilding)
+                {
+                    Build(freeBot);
+                    _isBaseBuilding = false;
+                }
+                else
+                {
+                    freeBot.GoAfterResource(_scanner.GetResource());
+                }
+            }
+        }
+    }
+
     public void Initialize(Scanner scanner, SpawnerBase baseSpawner, Bot builderBot = null)
     {
         _scanner = scanner;
@@ -45,22 +78,19 @@ public class Base : MonoBehaviour
             StartCoroutine(DelayedCreateBot());
     }
 
+    public void RemoveBot(Bot bot)
+    {
+        if (_bots.Contains(bot))
+        {
+            _bots.Remove(bot);
+            BotsCountChanged?.Invoke(_bots.Count);
+        }
+    }
+
     private IEnumerator DelayedCreateBot()
     {
         yield return null;
         CreateBot();
-    }
-
-    private void OnEnable()
-    {
-        _baseCollector.ResourceDelivered += OnResourceCollected;
-        _baseBuilder.BuildStarted += OnBaseBuildStarted;
-    }
-
-    private void OnDisable()
-    {
-        _baseCollector.ResourceDelivered -= OnResourceCollected;
-        _baseBuilder.BuildStarted -= OnBaseBuildStarted;
     }
 
     private void OnResourceCollected(Bot bot)
@@ -87,27 +117,6 @@ public class Base : MonoBehaviour
         {
             _inBaseBeingBuilt = false;
             CreateBase();
-        }
-    }
-
-    private void Update()
-    {
-        if (_scanner != null && _scanner.TryHereResources())
-        {
-            Bot freeBot = FindFreeBot();
-
-            if (freeBot != null)
-            {
-                if (_isBaseBuilding)
-                {
-                    Build(freeBot);
-                    _isBaseBuilding = false;
-                }
-                else
-                {
-                    freeBot.GoAfterResource(_scanner.GetResource());
-                }
-            }
         }
     }
 
@@ -154,14 +163,7 @@ public class Base : MonoBehaviour
 
             if (_baseSpawner != null)
                 bot.SetBaseSpawner(_baseSpawner);
-        }
-    }
 
-    public void RemoveBot(Bot bot)
-    {
-        if (_bots.Contains(bot))
-        {
-            _bots.Remove(bot);
             BotsCountChanged?.Invoke(_bots.Count);
         }
     }

@@ -18,6 +18,11 @@ public class UI : MonoBehaviour
         _mainCamera = Camera.main;
     }
 
+    private void Start()
+    {
+        UpdateUI();
+    }
+
     private void OnEnable()
     {
         if (_baseWallet != null)
@@ -50,21 +55,7 @@ public class UI : MonoBehaviour
         }
     }
 
-    private void OnPointsChanged(int points) => UpdateUI();
-
-    private void OnBotsCountChanged(int count) => UpdateUI();
-
-    private void OnBuildStateChanged() => UpdateUI();
-
-    private void LateUpdate() => LookAtCamera();
-
-    private void LookAtCamera()
-    {
-        if (_uiText != null && _mainCamera != null)
-            _uiText.transform.rotation = _mainCamera.transform.rotation;
-    }
-
-    private void UpdateUI()
+    public void UpdateUI()
     {
         if (_uiText == null || _base == null || _baseWallet == null)
             return;
@@ -78,5 +69,19 @@ public class UI : MonoBehaviour
         _uiText.text = $"Resources: {resourcesCount}\n" +
                       $"Bots: {botsCount}\n" +
                       $"{buildStatus}";
+    }
+
+    private void OnPointsChanged(int points) => UpdateUI();
+
+    private void OnBotsCountChanged(int count) => UpdateUI();
+
+    private void OnBuildStateChanged() => UpdateUI();
+
+    private void LateUpdate() => LookAtCamera();
+
+    private void LookAtCamera()
+    {
+        if (_uiText != null && _mainCamera != null)
+            _uiText.transform.rotation = _mainCamera.transform.rotation;
     }
 }

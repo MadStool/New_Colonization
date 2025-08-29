@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(MoverBot))]
@@ -16,8 +15,10 @@ public class Bot : MonoBehaviour
     private Coroutine _currentAction;
     private bool _isInitialized = false;
     private bool _isBusy = false;
+    private Resource _currentResource;
 
     public bool IsBusy => _isBusy;
+    public Resource CurrentResource => _currentResource;
 
     public void SetBase(Base baseObject)
     {
@@ -86,7 +87,11 @@ public class Bot : MonoBehaviour
 
     public void SubmitResource(Resource resource)
     {
-        Destroy(resource.gameObject);
+        if (_currentResource == resource)
+        {
+            Destroy(resource.gameObject);
+            _currentResource = null;
+        }
     }
 
     public void GoAfterResource(Resource resource)
@@ -96,8 +101,9 @@ public class Bot : MonoBehaviour
         StartNewAction(MoveToPosition(resource.transform.position));
     }
 
-    private void OnResourceCollected()
+    private void OnResourceCollected(Resource resource)
     {
+        _currentResource = resource;
         StartNewAction(ReturnToBase());
     }
 

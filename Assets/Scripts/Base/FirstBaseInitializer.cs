@@ -14,4 +14,24 @@ public class FirstBaseInitializer : MonoBehaviour
             baseComponent.Initialize(_scanner, _baseSpawner);
         }
     }
+
+    private void Start()
+    {
+        UI uiComponent = GetComponent<UI>();
+
+        if (uiComponent != null)
+        {
+            Invoke(nameof(ForceUIUpdate), 0.1f);
+        }
+    }
+
+    private void ForceUIUpdate()
+    {
+        UI uiComponent = GetComponent<UI>();
+
+        if (uiComponent != null)
+        {
+            uiComponent.UpdateUI();
+        }
+    }
 }
