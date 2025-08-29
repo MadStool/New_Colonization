@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class BuilderBot : MonoBehaviour
 {
     private Bot _thisBot;
-    private SpawnerBase _baseSpawner;
     private Flag _flag;
     private bool _isBuilding = false;
+    private Base _currentBase;
 
     public event Action Free;
 
@@ -17,9 +16,9 @@ public class BuilderBot : MonoBehaviour
         _thisBot = GetComponent<Bot>();
     }
 
-    public void SetBaseSpawner(SpawnerBase spawnerBase)
+    public void SetBase(Base baseObject)
     {
-        _baseSpawner = spawnerBase;
+        _currentBase = baseObject;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -35,22 +34,19 @@ public class BuilderBot : MonoBehaviour
         yield return new WaitUntil(() => Vector3.Distance(transform.position, flag.transform.position) < 0.1f);
 
         transform.position = flag.transform.position;
-        Destroy(flag.gameObject);
-        _flag = null;
 
-        if (_baseSpawner == null)
+        if (_currentBase != null)
         {
-            Debug.LogError("BaseSpawner not set!");
-            yield break;
+            Base oldBase = _currentBase;
+            _currentBase.RequestBaseCreation(flag.transform.position, _thisBot);
+        }
+        else
+        {
+            Debug.LogError("Current base not found!");
         }
 
-        Base createdBase = _baseSpawner.SpawnBase(transform.position, _thisBot);
-
-        Base originalBase = _thisBot.transform.parent.GetComponent<Base>();
-
-        if (originalBase != null)
-            originalBase.RemoveBot(_thisBot);
-
+        Destroy(flag.gameObject);
+        _flag = null;
         Free?.Invoke();
     }
 

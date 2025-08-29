@@ -5,13 +5,24 @@ public class FirstBaseInitializer : MonoBehaviour
     [SerializeField] private Scanner _scanner;
     [SerializeField] private SpawnerBase _baseSpawner;
 
+    private Base _baseComponent;
+
     private void Awake()
     {
-        Base baseComponent = GetComponent<Base>();
+        _baseComponent = GetComponent<Base>();
 
-        if (baseComponent != null && _scanner != null && _baseSpawner != null)
+        if (_baseComponent != null && _scanner != null && _baseSpawner != null)
         {
-            baseComponent.Initialize(_scanner, _baseSpawner);
+            _baseComponent.BaseCreationRequested += _baseSpawner.HandleBaseCreationRequest;
+            _baseComponent.Initialize(_scanner);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_baseComponent != null && _baseSpawner != null)
+        {
+            _baseComponent.BaseCreationRequested -= _baseSpawner.HandleBaseCreationRequest;
         }
     }
 

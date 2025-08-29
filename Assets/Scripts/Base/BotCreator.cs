@@ -10,7 +10,11 @@ public class BotCreator : MonoBehaviour
     {
         Bot bot = Instantiate(_botPrefab, transform.position, Quaternion.identity);
         bot.transform.parent = transform;
-        bot.SetBase(GetComponent<Base>());
+
+        Base baseComponent = GetComponent<Base>();
+
+        if (baseComponent != null)
+            bot.SetBase(baseComponent);
 
         return bot;
     }

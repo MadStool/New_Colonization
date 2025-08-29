@@ -9,7 +9,6 @@ using UnityEngine;
 [RequireComponent(typeof(CollectorBase))]
 public class Base : MonoBehaviour
 {
-    [SerializeField] private SpawnerBase _baseSpawner;
     [SerializeField] private int _botCost = 3;
     [SerializeField] private int _baseCost = 5;
 
@@ -25,6 +24,12 @@ public class Base : MonoBehaviour
     public int BotsCount => _bots.Count;
 
     public event Action<int> BotsCountChanged;
+    public event Action<Base, Vector3, Bot> BaseCreationRequested;
+
+    public bool ContainsBot(Bot bot)
+{
+    return _bots.Contains(bot);
+}
 
     private void Awake()
     {
@@ -38,12 +43,14 @@ public class Base : MonoBehaviour
     {
         _baseCollector.ResourceDelivered += OnResourceCollected;
         _baseBuilder.BuildStarted += OnBaseBuildStarted;
+        _baseBuilder.BuildCompleted += OnBaseBuildCompleted;
     }
 
     private void OnDisable()
     {
         _baseCollector.ResourceDelivered -= OnResourceCollected;
         _baseBuilder.BuildStarted -= OnBaseBuildStarted;
+        _baseBuilder.BuildCompleted -= OnBaseBuildCompleted;
     }
 
     private void Update()
@@ -67,14 +74,11 @@ public class Base : MonoBehaviour
         }
     }
 
-    public void Initialize(Scanner scanner, SpawnerBase baseSpawner, Bot builderBot = null)
+    public void Initialize(Scanner scanner, Bot builderBot = null)
     {
         _scanner = scanner;
-        _baseSpawner = baseSpawner;
 
-        if (builderBot != null)
-            AddBot(builderBot);
-        else
+        if (builderBot == null)
             StartCoroutine(DelayedCreateBot());
     }
 
@@ -83,6 +87,18 @@ public class Base : MonoBehaviour
         if (_bots.Contains(bot))
         {
             _bots.Remove(bot);
+            bot.ChangeParent(null);
+            BotsCountChanged?.Invoke(_bots.Count);
+        }
+    }
+
+    public void AddBot(Bot bot)
+    {
+        if (_bots.Contains(bot) == false)
+        {
+            _bots.Add(bot);
+            bot.SetBase(this);
+            bot.ChangeParent(transform);
             BotsCountChanged?.Invoke(_bots.Count);
         }
     }
@@ -90,7 +106,11 @@ public class Base : MonoBehaviour
     private IEnumerator DelayedCreateBot()
     {
         yield return null;
-        CreateBot();
+
+        if (_bots.Count == 0)
+        {
+            CreateBot();
+        }
     }
 
     private void OnResourceCollected(Bot bot)
@@ -104,6 +124,8 @@ public class Base : MonoBehaviour
     {
         _inBaseBeingBuilt = true;
     }
+
+    private void OnBaseBuildCompleted() { }
 
     private void TryCreateBot()
     {
@@ -129,22 +151,9 @@ public class Base : MonoBehaviour
         return null;
     }
 
-    private void AddBot(Bot bot)
-    {
-        if (_bots.Contains(bot) == false)
-        {
-            _bots.Add(bot);
-            bot.SetBase(this);
-
-            if (_baseSpawner != null)
-                bot.SetBaseSpawner(_baseSpawner);
-
-            BotsCountChanged?.Invoke(_bots.Count);
-        }
-    }
-
     private void Build(Bot bot)
     {
+        RemoveBot(bot);
         _baseBuilder.CreateBase(bot);
     }
 
@@ -160,11 +169,12 @@ public class Base : MonoBehaviour
         if (_bots.Contains(bot) == false)
         {
             _bots.Add(bot);
-
-            if (_baseSpawner != null)
-                bot.SetBaseSpawner(_baseSpawner);
-
             BotsCountChanged?.Invoke(_bots.Count);
         }
+    }
+
+    public void RequestBaseCreation(Vector3 position, Bot builderBot)
+    {
+        BaseCreationRequested?.Invoke(this, position, builderBot);
     }
 }

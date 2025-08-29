@@ -27,18 +27,15 @@ public class Bot : MonoBehaviour
         InitializeComponents();
     }
 
-    public void SetBaseSpawner(SpawnerBase spawnerBase)
-    {
-        if (_botBuilder != null)
-            _botBuilder.SetBaseSpawner(spawnerBase);
-    }
+    public void ChangeParent(Transform newParent) => transform.SetParent(newParent);
 
     public void ChangeBase(Base createdBase)
     {
         if (_currentBase != null)
             _currentBase.RemoveBot(this);
 
-        SetBase(createdBase);
+        if (createdBase != null)
+            SetBase(createdBase);
     }
 
     private void InitializeComponents()
@@ -46,6 +43,8 @@ public class Bot : MonoBehaviour
         _botMover = GetComponent<MoverBot>();
         _botCollector = GetComponent<CollectorBot>();
         _botBuilder = GetComponent<BuilderBot>();
+
+        _botBuilder.SetBase(_currentBase);
 
         _botCollector.ResourceCollected += OnResourceCollected;
         _botBuilder.Free += OnBuildingComplete;
